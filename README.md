@@ -2,6 +2,12 @@
 
 整理各种有用的Vulkan示例工程或代码，有些来自书籍有些来自其他地方，主要用于个人消化
 
+## env
+
+- windows 10+
+- cmake 3.20+
+- vcpkg
+
 ## samples
 
 - `modern-cookbook`: 重新总结
