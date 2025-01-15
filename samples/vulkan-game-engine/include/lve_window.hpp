@@ -11,6 +11,10 @@ namespace lve {
         LveWindow(int w, int h, std::string name);
         ~LveWindow();
 
+        // delete copy constructor and copy operator
+        LveWindow(const LveWindow&) = delete;
+        LveWindow& operator=(const LveWindow&) = delete;
+
         bool shouldClose() {
             return glfwWindowShouldClose(window);
         }
