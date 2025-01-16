@@ -10,7 +10,8 @@
 
 ## samples
 
-- `modern-cookbook`: 重新总结
+- `modern-cookbook`: re-summary code
+- `vulkan-game-engine`: self implemented
 
 ## reference
 
