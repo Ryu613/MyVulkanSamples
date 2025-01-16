@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 
-add_definitions(-DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
-
 project(vulkan-game-engine)
 
-include(cmake/third_library.cmake)
+include(cmake/externals.cmake)
 
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS *.hpp *.cpp)
 

@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
 
-add_definitions(-DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
-
 project(modern-cookbook)
 
 include(cmake/third_party_library.cmake)
