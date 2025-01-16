@@ -1,7 +1,7 @@
 #pragma once
 // 防止与windows.h里的min/max冲突
 #define NOMINMAX
-// 防止符号冲突
+// 防止vulkan的全局函数定义产生冲突
 #define VK_NO_PROTOTYPES
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <Volk/volk.h>

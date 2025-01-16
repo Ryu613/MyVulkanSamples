@@ -4,14 +4,14 @@ add_definitions(-DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.
 
 project(modern-cookbook)
 
-include(cmake/third_library.cmake)
+include(cmake/third_party_library.cmake)
 
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS *.hpp *.cpp)
 
 
 add_executable(mcook ${srcs})
 
-include_directories(${Vulkan_INCLUDE_DIR})
+include_directories( include ${Vulkan_INCLUDE_DIR})
 
 target_link_directories(mcook PUBLIC ${Vulkan_INCLUDE_DIR}/../lib)
 
