@@ -17,6 +17,18 @@
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
             }
+        },
+        {
+          "name": "x64-debug-config",
+          "hidden": true,
+          "inherits": "windows-base",
+          "architecture": {
+              "value": "x64",
+              "strategy": "external"
+          },
+          "cacheVariables": {
+              "CMAKE_BUILD_TYPE": "Debug"
+          }
         }
     ]
 }
