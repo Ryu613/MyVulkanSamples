@@ -1,17 +1,20 @@
 #pragma once
 
-#include "vulkan/vulkan.h"
 #include <cassert>
 #include <iostream>
+#include <vector>
 
 #if defined _WIN32
     #include <windows.h>
     #define LoadFunction GetProcAddress
     #define LIBRARY_TYPE HMODULE
+    #define VK_USE_PLATFORM_WIN32_KHR 1
 #elif defined _linux
     #define LoadFunction dlsym
 #define LIBRARY_TYPE void*
 #endif
+
+#include "vulkan/vulkan.h"
 
 #define VK_CHK(func)                                                                   \
   {                                                                                    \
@@ -39,5 +42,9 @@ namespace cook {
     bool loadVulkanFunction(const LIBRARY_TYPE& vulkan_library);
 
     bool loadVulkanGlobalFunction();
+
+    bool loadVulkanInstanceLevelFunction(const VkInstance& instance);
+
+    bool loadVulkanInstanceLevelExtensionFunction(const VkInstance& instance, const std::vector<const char*> enabled_extensions);
     
 } // namespace cook

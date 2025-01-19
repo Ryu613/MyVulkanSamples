@@ -6,10 +6,14 @@ include(cmake/externals.cmake)
 
 file(GLOB_RECURSE srcs CONFIGURE_DEPENDS *.hpp *.cpp)
 
-
 add_executable(vcook ${srcs})
 
 target_include_directories(vcook PRIVATE include ${Vulkan_INCLUDE_DIR})
+
+# open vulkan validation layer to logging and debug
+add_compile_definitions(VK_DEBUG_ENABLED)
+# which book chapter should run
+add_compile_definitions(RUN_RECIPE_NAME=Chapter1)
 
 #target_link_libraries(vcook PRIVATE ${Vulkan_LIBRARIES})
 

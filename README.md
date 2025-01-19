@@ -2,6 +2,8 @@
 
 整理各种有用的Vulkan示例工程或代码，参考来源来自书籍或其他地方，主要用于个人消化
 
+不是复制粘贴，全部为个人重新从0实现
+
 ## env
 
 - windows 10+
@@ -10,10 +12,13 @@
 
 ## samples
 
-- `modern-cookbook`: re-summary code
-- `vulkan-game-engine`: self implemented
+all summaried and self implemented from scrach
 
-## reference
+- `vulkan-cook-book`: a classic vulkan introduction in practise
+- `vulkan-game-engine`: one of best vulkan graphics tutorial,
+- `modern-cookbook`: not good enough but still valuable to learn about vulkan app implementations in modern way.
+
+## references
 
 - [`modern-cookbook`](https://github.com/PacktPublishing/The-Modern-Vulkan-Cookbook): from book modern-vulkan-cookbook
 - [`Vulkan-Samples`](https://github.com/KhronosGroup/Vulkan-Samples): Official one
