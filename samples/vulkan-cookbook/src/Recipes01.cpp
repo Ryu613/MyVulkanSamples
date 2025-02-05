@@ -239,6 +239,75 @@ namespace cook {
 		VkDevice logical_device;
 		VK_CHK(vkCreateDevice(chosen_physical_device, &device_create_info, nullptr, &logical_device));
 
+		/**
+		* load device-level function
+		*/
+		if (!cook::loadVulkanDeviceLevelFunction(logical_device)) {
+			return false;
+		}
+		if (!cook::loadVulkanDeviceLevelExtensionFunction(logical_device, available_extensions)) {
+			return false;
+		}
+
+		uint32_t queue_index = 0;
+	
+		/**
+		* get device queue
+		* 
+		*/
+		VkQueue queue;
+		vkGetDeviceQueue(logical_device, queue_family_index, queue_index, &queue);
+
+		/**
+		* create logical device with geometry shaders, graphics, and compute queues
+		*/
+		//reset queue_family_index to -1 due to re-create logic device
+		queue_family_index = -1;
+
+		VkDevice logical_device2;
+		VkQueue graphics_queue, compute_queue;
+		// enumerated from preceding code
+		std::vector<VkPhysicalDevice> physical_devices = available_devices;
+		for (const auto& physical_device : physical_devices) {
+			VkPhysicalDeviceFeatures device_features;
+			vkGetPhysicalDeviceFeatures(physical_device, &device_features);
+			if (device_features.geometryShader) {
+				device_features = {};
+				device_features.geometryShader = VK_TRUE;
+			}
+			else {
+				continue;
+			}
+			uint32_t graphics_queue_family_index, compute_queue_family_index;
+
+			uint32_t queue_families_count = 0;
+			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_families_count, nullptr);
+			if (queue_families_count == 0) {
+				std::cout << "couldn't get the number of queue families. " << std::endl;
+				return false;
+			}
+			std::vector<VkQueueFamilyProperties> queue_families(queue_families_count);
+			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_families_count, queue_families.data());
+			if (queue_families_count == 0) {
+				std::cout << "couldn't get properties of queue families. " << std::endl;
+				return false;
+			}
+			// get queue_family index which support graphics and compute capabilities
+			VkQueueFlags desired_capabilities = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
+			for (uint32_t index = 0; index < queue_families_count; ++index) {
+				if (queue_families[index].queueCount > 0) {
+					if ((queue_families[index].queueFlags & desired_capabilities) != 0) {
+						queue_family_index = index;
+						break;
+					}
+				}
+			}
+			if (queue_family_index == -1) {
+				continue;
+			}
+
+		}
+
 		return true;
 	}
 

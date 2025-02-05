@@ -80,5 +80,32 @@ namespace cook {
 		#include "ListOfVulkanFunctions.inl"
 		return true;
 	}
+
+	bool loadVulkanDeviceLevelFunction(const VkDevice& device) {
+		#define DEVICE_LEVEL_VULKAN_FUNCTION(name) \
+		name = (PFN_##name)vkGetDeviceProcAddr(device, #name); \
+			if (name == nullptr) { \
+					std::cout << "couldn't load Vulkan device-level function named: " \
+					#name << std::endl; \
+					return false; \
+			}
+		#include "ListOfVulkanFunctions.inl"
+		return true;
+	}
+
+	bool loadVulkanDeviceLevelExtensionFunction(const VkDevice& device, const std::vector<const char*> enabled_extensions) {
+#define DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION(name, extension) \
+			for(auto& each : enabled_extensions) {\
+				if (std::string(each) == std::string(extension)) {\
+					name = (PFN_##name)vkGetDeviceProcAddr(device, #name); \
+						if (name == nullptr) {\
+							std::cout << "couldn't load Vulkan device-level function named: " \
+							#name << std::endl; \
+							return false; \
+						}\
+				}\
+			}
+#include "ListOfVulkanFunctions.inl"
+	}
 	
 } // namespace cook

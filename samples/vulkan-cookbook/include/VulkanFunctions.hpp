@@ -46,5 +46,9 @@ namespace cook {
     bool loadVulkanInstanceLevelFunction(const VkInstance& instance);
 
     bool loadVulkanInstanceLevelExtensionFunction(const VkInstance& instance, const std::vector<const char*> enabled_extensions);
+
+    bool loadVulkanDeviceLevelFunction(const VkDevice& device);
+
+    bool loadVulkanDeviceLevelExtensionFunction(const VkDevice& device, const std::vector<const char*> enabled_extensions);
     
 } // namespace cook
