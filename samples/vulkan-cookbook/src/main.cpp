@@ -12,6 +12,5 @@ int main() {
 	if (!DO_RECIPE(doRecipe, RUN_RECIPE_NAME)) {
 		std::cout << "failed cooking" << std::endl;
 	}
-	DO_RECIPE(washDishes, RUN_RECIPE_NAME);
 	return 0;
 }

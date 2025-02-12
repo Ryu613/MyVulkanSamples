@@ -1,6 +1,31 @@
 #include "Recipes.hpp"
 
 namespace cook {
+	bool getIndexofQueueFamily(const VkPhysicalDevice& physical_device, const VkQueueFlags& queueFlags, uint32_t& queue_family_index) {
+		bool res = false;
+		uint32_t queue_families_count = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_families_count, nullptr);
+		if (queue_families_count == 0) {
+			std::cout << "couldn't get the number of queue families. " << std::endl;
+			return false;
+		}
+		std::vector<VkQueueFamilyProperties> queue_families(queue_families_count);
+		vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_families_count, queue_families.data());
+		if (queue_families_count == 0) {
+			std::cout << "couldn't get properties of queue families. " << std::endl;
+			return false;
+		}
+		for (uint32_t index = 0; index < queue_families_count; ++index) {
+			if (queue_families[index].queueCount > 0) {
+				if ((queue_families[index].queueFlags & queueFlags) != 0) {
+					queue_family_index = index;
+					res = true;
+					break;
+				}
+			}
+		}
+		return res;
+	}
 	bool doRecipeChapter1() {
 
 		/**
@@ -46,7 +71,7 @@ namespace cook {
 		/**
 		* create vulkan instance
 		*/
-		std::vector<char const*> desired_extensions;
+		std::vector<const char*> desired_extensions;
 		// enable debug util extensions is available
 		// VK_EXT_debug_utils extension provide more info combined with validation layers
 #if defined(VK_DEBUG_ENABLED)
@@ -245,31 +270,41 @@ namespace cook {
 		if (!cook::loadVulkanDeviceLevelFunction(logical_device)) {
 			return false;
 		}
-		if (!cook::loadVulkanDeviceLevelExtensionFunction(logical_device, available_extensions)) {
+		if (!cook::loadVulkanDeviceLevelExtensionFunction(logical_device, desired_device_extensions)) {
 			return false;
 		}
 
 		uint32_t queue_index = 0;
-	
+
 		/**
 		* get device queue
-		* 
 		*/
 		VkQueue queue;
 		vkGetDeviceQueue(logical_device, queue_family_index, queue_index, &queue);
 
 		/**
+		* destroy device
+		*/
+		if (logical_device) {
+			vkDestroyDevice(logical_device, nullptr);
+			logical_device = VK_NULL_HANDLE;
+		}
+
+		/**
 		* create logical device with geometry shaders, graphics, and compute queues
 		*/
+
 		//reset queue_family_index to -1 due to re-create logic device
 		queue_family_index = -1;
 
-		VkDevice logical_device2;
+		VkDevice logical_device2 = VK_NULL_HANDLE;
+		uint32_t graphics_queue_family_index, compute_queue_family_index;
 		VkQueue graphics_queue, compute_queue;
 		// enumerated from preceding code
 		std::vector<VkPhysicalDevice> physical_devices = available_devices;
+		VkPhysicalDeviceFeatures device_features;
+		VkPhysicalDevice choosen_physical_device2;
 		for (const auto& physical_device : physical_devices) {
-			VkPhysicalDeviceFeatures device_features;
 			vkGetPhysicalDeviceFeatures(physical_device, &device_features);
 			if (device_features.geometryShader) {
 				device_features = {};
@@ -278,40 +313,78 @@ namespace cook {
 			else {
 				continue;
 			}
-			uint32_t graphics_queue_family_index, compute_queue_family_index;
 
-			uint32_t queue_families_count = 0;
-			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_families_count, nullptr);
-			if (queue_families_count == 0) {
-				std::cout << "couldn't get the number of queue families. " << std::endl;
-				return false;
-			}
-			std::vector<VkQueueFamilyProperties> queue_families(queue_families_count);
-			vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_families_count, queue_families.data());
-			if (queue_families_count == 0) {
-				std::cout << "couldn't get properties of queue families. " << std::endl;
-				return false;
-			}
-			// get queue_family index which support graphics and compute capabilities
-			VkQueueFlags desired_capabilities = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
-			for (uint32_t index = 0; index < queue_families_count; ++index) {
-				if (queue_families[index].queueCount > 0) {
-					if ((queue_families[index].queueFlags & desired_capabilities) != 0) {
-						queue_family_index = index;
-						break;
-					}
-				}
-			}
-			if (queue_family_index == -1) {
+			if (!getIndexofQueueFamily(physical_device, VK_QUEUE_GRAPHICS_BIT, graphics_queue_family_index)) {
+				std::cout << "couldn't get the graphics index of queue families. " << std::endl;
 				continue;
 			}
 
+			if (!getIndexofQueueFamily(physical_device, VK_QUEUE_COMPUTE_BIT, compute_queue_family_index)) {
+				std::cout << "couldn't get the compute index of queue families. " << std::endl;
+				continue;
+			}
+			choosen_physical_device2 = physical_device;
+			std::vector<QueueInfo> requested_queues{ {graphics_queue_family_index,{1.0f}} };
+			if (graphics_queue_family_index != compute_queue_family_index) {
+				requested_queues.push_back({ compute_queue_family_index, {1.0f} });
+			}
+			// create device
+			std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+			for (const auto& each : requested_queues) {
+				queue_create_infos.push_back(
+					{
+						.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+						.pNext = nullptr,
+						.flags = 0,
+						.queueFamilyIndex = each.familyIndex,
+						.queueCount = static_cast<uint32_t>(each.priorities.size()),
+						.pQueuePriorities = each.priorities.data()
+					}
+				);
+			}
+			VkDeviceCreateInfo device_create_info2{
+				.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+				.pNext = nullptr,
+				.flags = 0,
+				.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size()),
+				.pQueueCreateInfos = queue_create_infos.data(),
+				.enabledLayerCount = 0,
+				.ppEnabledLayerNames = nullptr,
+				.enabledExtensionCount = static_cast<uint32_t>(desired_device_extensions.size()),
+				.ppEnabledExtensionNames = desired_device_extensions.data(),
+				.pEnabledFeatures = &device_features
+			};
+			VK_CHK(vkCreateDevice(choosen_physical_device2, &device_create_info2, nullptr, &logical_device2));
+			if (!cook::loadVulkanDeviceLevelFunction(logical_device2)) {
+				std::cout << "couldn't load device level functions." << std::endl;
+				continue;
+			}
+			if (!cook::loadVulkanDeviceLevelExtensionFunction(logical_device2, {})) {
+				std::cout << "couldn't load device level functions." << std::endl;
+				continue;
+			}
+			vkGetDeviceQueue(logical_device2, graphics_queue_family_index, 0, &graphics_queue);
+			vkGetDeviceQueue(logical_device2, compute_queue_family_index, 0, &compute_queue);
+			break;
 		}
 
+		/**
+		* destroy device & instance
+		*/
+		if (logical_device2) {
+			vkDestroyDevice(logical_device2, nullptr);
+			logical_device2 = VK_NULL_HANDLE;
+		}
+		if (instance) {
+			vkDestroyInstance(instance, nullptr);
+			instance = VK_NULL_HANDLE;
+		}
+		
+		/**
+		* releasing a vulkan loader library
+		*/
+		FreeLibrary(vulkan_library);
+		vulkan_library = nullptr;
 		return true;
-	}
-
-	void washDishesChapter1() {
-
 	}
 }

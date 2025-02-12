@@ -12,7 +12,7 @@
 
 ## samples
 
-all summaried and self implemented from scrach
+summaried and implemented all by myself from scrach
 
 - `vulkan-cook-book`: a classic vulkan introduction in practise
 - `vulkan-game-engine`: one of best vulkan graphics tutorial,

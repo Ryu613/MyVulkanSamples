@@ -7,7 +7,5 @@
 
 namespace cook {
 	bool doRecipeChapter1();
-	void washDishesChapter1();
 	bool doRecipeChapter2();
-	void washDishesChapter2();
 }
