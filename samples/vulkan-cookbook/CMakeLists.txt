@@ -13,7 +13,7 @@ target_include_directories(vcook PRIVATE include ${Vulkan_INCLUDE_DIR})
 # open vulkan validation layer to logging and debug
 add_compile_definitions(VK_DEBUG_ENABLED)
 # which book chapter should run
-add_compile_definitions(RUN_RECIPE_NAME=Chapter2)
+add_compile_definitions(RUN_RECIPE_NAME=Chapter3)
 
 #target_link_libraries(vcook PRIVATE ${Vulkan_LIBRARIES})
 

@@ -259,8 +259,66 @@ namespace cook {
 			.oldSwapchain = nullptr
 		};
 		VkSwapchainKHR swapchain;
-		VK_CHK(vkCreateSwapchainKHR(logical_device, &swapchain_create_info, nullptr, &swapchain))
+		VK_CHK(vkCreateSwapchainKHR(logical_device, &swapchain_create_info, nullptr, &swapchain));
 		// then destroy old swapchain
+
+		/**
+		* get handles of swapchain images
+		*/
+		uint32_t images_count = 0;
+		VK_CHK(vkGetSwapchainImagesKHR(logical_device, swapchain, &images_count, nullptr));
+		std::vector<VkImage> swapchain_images(images_count);
+		vkGetSwapchainImagesKHR(logical_device, swapchain, &images_count, swapchain_images.data());
+
+		/**
+		* acquiring a swapchain image, create semaphore and/or fence
+		* due to semaphre and fence operation should refer to ch3, all code commented
+		*/
+		//VkSemaphore semaphore;
+		//VkFence fence;
+		//uint32_t image_index;
+		//// timeout is in nanoseconds(2s)
+		//// in general, use semaphore is enough a
+		//VK_CHK(vkAcquireNextImageKHR(logical_device, swapchain, 2000000000, semaphore, fence, &image_index));
+
+		///**
+		//* image presentation
+		//*/
+		//struct PresentInfo {
+		//	VkSwapchainKHR Swapchain;
+		//	uint32_t ImageIndex;
+		//};
+		//VkQueue queue;
+		//std::vector<VkSemaphore> rendering_semaphores;
+		//std::vector<VkSwapchainKHR> swapchains;
+		//swapchains.push_back(swapchain);
+		//std::vector<uint32_t> image_indices(swapchains.size());
+		//VkPresentInfoKHR present_info{
+		//	.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+		//	.pNext = nullptr,
+		//	.waitSemaphoreCount = static_cast<uint32_t>(rendering_semaphores.size()),
+		//	.pWaitSemaphores = rendering_semaphores.data(),
+		//	.swapchainCount = static_cast<uint32_t>(swapchains.size()),
+		//	.pImageIndices = image_indices.data(),
+		//	.pResults = nullptr,
+		//};
+		//VK_CHK(vkQueuePresentKHR(queue, &present_info));
+
+		/**
+		* destroy a swapchain
+		*/
+		if (swapchain) {
+			vkDestroySwapchainKHR(logical_device, swapchain, nullptr);
+			swapchain = VK_NULL_HANDLE;
+		}
+
+		/**
+		* destroy a presentation surface
+		*/
+		if (presentation_surface) {
+			vkDestroySurfaceKHR(instance, presentation_surface, nullptr);
+			presentation_surface = VK_NULL_HANDLE;
+		}
 		return true;
 	}
 }
