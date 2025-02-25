@@ -220,8 +220,9 @@ namespace cook {
 				// skip this insuficient physical device;
 				continue;
 			}
-			// thoose this device
+			// thoose this device and quit loop
 			chosen_physical_device = physical_device;
+			break;
 		}
 
 		if (queue_family_index == -1) {

@@ -91,6 +91,7 @@ namespace cook {
 			}
 			// thoose this device
 			chosen_physical_device = physical_device;
+			break;
 		}
 
 		if (queue_family_index == -1) {
@@ -174,6 +175,89 @@ namespace cook {
 			.pInheritanceInfo = secondary_command_buffer_info,
 		};
 		VK_CHK(vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info));
+
+		/**
+		* stop command buffer recording
+		*/
+		VK_CHK(vkEndCommandBuffer(command_buffer));
+
+		/**
+		* reset command buffer
+		*/
+		usage = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		VkCommandBufferResetFlags release_resources = VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT;
+		VK_CHK(vkResetCommandBuffer(command_buffer, release_resources));
+
+		/**
+		* create semaphore
+		*/
+		VkSemaphoreCreateInfo semaphore_create_info{
+			.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0
+		};
+		VkSemaphore semaphore;
+		VK_CHK(vkCreateSemaphore(logical_device, &semaphore_create_info, nullptr, &semaphore));
+
+		/**
+		* create fence
+		*/
+		VkFenceCreateInfo fence_create_info{
+			.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+			.pNext = nullptr,
+			.flags = 0u, // unsignaled
+		};
+		VkFence fence;
+		VK_CHK(vkCreateFence(logical_device, &fence_create_info, nullptr, &fence));
+		/**
+		* waiting for fences
+		*/
+		std::vector<VkFence> fences;
+		// wait for all fences in "fences" are signaled, otherwise one of them signaled
+		VkBool32 wait_for_all = VK_TRUE;
+		// in nanosec equal to 5sec
+		uint64_t timeout = 5000000000;
+		fences.push_back(fence);
+ 		VkResult result = vkWaitForFences(logical_device, static_cast<uint32_t>(fences.size()), fences.data(), wait_for_all, timeout);
+		if (result) {
+			std::cout << "Waiting on fence failed." << std::endl;
+			return false;
+		}
+
+		/**
+		* reset fence(can batch reset in vector)
+		*/
+		VK_CHK(vkResetFences(logical_device, static_cast<uint32_t>(fences.size()), &fences[0]));
+
+		/**
+		* submit command buffers to a queue
+		*/
+		struct WaitSemaphoreInfo {
+			VkSemaphore Semaphore;
+			VkPipelineStageFlags WaitingStage;
+		};
+		VkQueue queue;
+		vkGetDeviceQueue(logical_device, queue_family_index, 0u, &queue);
+		// commands should wait for semaphores to be signaled
+		std::vector<VkSemaphore> wait_semaphore_handles;
+		// queue should wait at which pipeline stages
+		std::vector<VkPipelineStageFlags> wait_semaphore_stages;
+		// command buffers which should be submitted to the selected queue
+		std::vector<VkCommandBuffer> command_buffers;
+		// store all semaphores' handles which should be signaled in that command buffers finished
+		std::vector<VkSemaphore> signal_semaphores;
+		VkSubmitInfo submit_info{
+			.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+			.pNext = nullptr,
+			.waitSemaphoreCount = static_cast<uint32_t>(wait_semaphore_handles.size()),
+			.pWaitSemaphores = wait_semaphore_handles.data(),
+			.pWaitDstStageMask = wait_semaphore_stages.data(),
+			.commandBufferCount = static_cast<uint32_t>(command_buffers.size()),
+			.pCommandBuffers = command_buffers.data(),
+			.signalSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size()),
+			.pSignalSemaphores = signal_semaphores.data()
+		};
+		VK_CHK(vkQueueSubmit(queue, 1, &submit_info, fence));
 		return true;
 	}
 }

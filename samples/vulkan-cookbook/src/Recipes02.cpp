@@ -1,7 +1,7 @@
 #include <Windows.h>
 #include "Recipes.hpp"
 #define VK_USE_PLATFORM_WIN32_KHR
-#define VOLK_IMPLEMENTATION
+//#define VOLK_IMPLEMENTATION
 #define VK_NO_PROTOTYPES
 #include "volk.h"
 #include <algorithm>
@@ -130,6 +130,7 @@ namespace cook {
 			}
 			// thoose this device
 			chosen_physical_device = physical_device;
+			break;
 		}
 
 		if (queue_family_index == -1) {
