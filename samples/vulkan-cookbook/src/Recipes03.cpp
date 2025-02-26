@@ -258,6 +258,11 @@ namespace cook {
 			.pSignalSemaphores = signal_semaphores.data()
 		};
 		VK_CHK(vkQueueSubmit(queue, 1, &submit_info, fence));
+
+		/**
+		* Sync two command buffers
+		*/
+		VkQueue& first_queue = queue;
 		return true;
 	}
 }
