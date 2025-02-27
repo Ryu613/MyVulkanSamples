@@ -11,6 +11,6 @@ project ("MyVulkanSamples")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(samples/vulkan-cookbook)
+#add_subdirectory(samples/vulkan-cookbook)
 #add_subdirectory(samples/modern-vulkan-cookbook)
-#add_subdirectory(samples/vulkan-game-engine)
+add_subdirectory(samples/vulkan-game-engine)
